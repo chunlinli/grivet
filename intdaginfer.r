@@ -1,5 +1,11 @@
-## This function find coefficients in coefficient matrices that maximize the likelihood.
-## U
+## This function computes U and W that maximize the likelihood with a closed-form formula given the nonzero indices.
+## The computational formula can be found in Appendix.
+## X: A n*q matrix representing interventions.
+## Y: A n*p matrix representing primary variables.
+## U0: Matrix of Indices for non-zero elements of U.
+## W0: Matrix of Indices for non-zero elements of W.
+## S: Precision matrix.
+
 intdag.mle <- function(X,Y,U0,W0,S){
   
   n <- nrow(X)
@@ -27,6 +33,18 @@ intdag.mle <- function(X,Y,U0,W0,S){
   W <- res.mat[-(1:p),]
   return(list(U=U,W=W))
 }
+
+## This function computes U and W that maximize the likelihood with BCD algorithm given the nonzero indices.
+## The computational algorithm can be found in Appendix.
+## X: A n*q matrix representing interventions.
+## Y: A n*p matrix representing primary variables.
+## U0: Matrix of Indices for non-zero elements of U.
+## W0: Matrix of Indices for non-zero elements of W.
+## U.init: Initial value for U
+## W.init: Initial value for W
+## S: Precision matrix.
+## max.it: Maximum number of iterations
+## tol: Tolerance of stopping criterion. 
 
 intdag.mle.bcd <- function(X,Y,U0,W0,U.init,W.init,S,max.it,tol){
   
@@ -97,9 +115,15 @@ intdag.mle.bcd <- function(X,Y,U0,W0,U.init,W.init,S,max.it,tol){
   return(list(U=U,W=W))
 }
 
-## This function computes 2Lr. U0 and W0 should be the matrix with elements 0 and 1,
-## indicating the exsitence of edges. Sigma should be the estimated covariance matrix
-## in stage 2.
+## This function computes 2Lr on the whole graph. 
+## X: A n*q matrix representing interventions.
+## Y: A n*p matrix representing primary variables.
+## U0: Matrix of Indices for non-zero elements of U under the null hypothesis.
+## W0: Matrix of Indices for non-zero elements of W under the null hypothesis.
+## U1: Matrix of Indices for non-zero elements of U under the alternative hypothesis.
+## W1: Matrix of Indices for non-zero elements of W under the alternative hypothesis.
+## S: Precision matrix.
+
 intdag.2lr <- function(X,Y,U0,W0,U1,W1,S){
   m0 <- intdag.mle(X,Y,U0,W0,S)
   U0.mle <- m0$U
@@ -146,33 +170,15 @@ intdag.2lr <- function(X,Y,U0,W0,U1,W1,S){
 }
 
 
-## This function computes 2Lr based on nodes involved in the tests.
-intdag.localization.ver1 <- function(X,Y,U.diff,U.hat,W.hat,Pi,Phi,Sigma){
-  Y.idx <- union(which(colSums(U.diff)!=0),which(rowSums(U.diff)!=0))
-  Y.idx <- Y.idx[order(Y.idx)]
-  Pi.new <- Pi[Y.idx,Y.idx]
-  U.test.new <- U.diff[Y.idx,Y.idx]
-  Sigma.new <- Sigma[Y.idx,Y.idx]
-  Y.new <- Y[,Y.idx,drop=FALSE]
-  for (i in 1:length(Y.idx)){
-    j <- Y.idx[i]
-    Yj.parents <- which(Pi[,j]!=0)
-    Yj.excluded <- setdiff(Yj.parents,Y.idx)
-    if (length(Yj.excluded)>0){
-      Y.new[,i] <- Y[,j] - Y[,Yj.excluded,drop=FALSE]%*%U.hat[Yj.excluded,j,drop=FALSE]
-    }
-  }
-  U.hat.new <- U.hat[Y.idx,Y.idx]
-  Phi.new <- Phi[,Y.idx,drop=FALSE]
-  X.idx <- which(rowSums(Phi.new)!=0)
-  X.idx <- X.idx[order(X.idx)]
-  Phi.new <- Phi.new[X.idx,,drop=FALSE]
-  W.hat.new <- W.hat[X.idx,Y.idx,drop=FALSE]
-  X.new <- X[,X.idx,drop=FALSE]
-  return(list(X.new=X.new,Y.new=Y.new,U.test.new=U.test.new,U.hat.new=U.hat.new,W.hat.new=W.hat.new,Pi.new=Pi.new,Phi.new=Phi.new,Sigma.new=Sigma.new))
-}
-
-## This function computes 2Lr based on nodes involved in the tests and their ancestors, Pi should be ancestral matrix here
+## This function computes the local graph with nodes involved in the tests and their ancestors
+## X: A n*q matrix representing interventions.
+## Y: A n*p matrix representing primary variables.
+## U.diff: Edges to be tested in the hypothesis testing.
+## U.hat: U or estimates of U.
+## W.hat: W or estimates of W.
+## Pi: Ancestral relationships.
+## Phi: Interventional relationships.
+## Sigma: Covariance matrix.
 intdag.localization.ver2 <- function(X,Y,U.diff,U.hat,W.hat,Pi,Phi,Sigma){
   Y.idx <- union(which(colSums(U.diff)!=0),which(rowSums(U.diff)!=0))
   Y.idx <- union(which(rowSums(Pi[,Y.idx])!=0),Y.idx)
