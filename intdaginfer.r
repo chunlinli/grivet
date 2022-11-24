@@ -1,4 +1,5 @@
 ## This function find coefficients in coefficient matrices that maximize the likelihood.
+## U
 intdag.mle <- function(X,Y,U0,W0,S){
   
   n <- nrow(X)
