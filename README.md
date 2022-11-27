@@ -28,4 +28,4 @@ R CMD SHLIB ctlpreg.c
 
 ## Usage
 
-An illustration of usage is provide in `ill_usage.Rmd`
+An illustration of usage is provided in `ill_usage.Rmd`
