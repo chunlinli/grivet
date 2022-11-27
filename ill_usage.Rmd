@@ -1,0 +1,177 @@
+---
+title: "ill_usage"
+date: '2022-11-27'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source("mbtlp.R",chdir = TRUE)
+source("intdagdiscovery.R",chdir = TRUE)
+source("intdagcoef.r",chdir = TRUE)
+source("intdaginfer.r",chdir = TRUE)
+library(mvtnorm)
+library(MASS)
+library(clusterGeneration)
+```
+
+```{r}
+## This function generates a random graph with respect to setting 2 in the paper
+random.generation <- function(p,n,U.test,type){
+  if (p%%2!=0)
+    stop("wrong p is given")
+  q <- 2.5*p
+  U <- matrix(sample(x=c(1,0),size=p*p,replace=TRUE,prob=c(1/p,1-1/p)),p,p)
+  for (i in 1:p){
+    for (j in 1:i){
+      U[i,j] <- 0
+    }
+  }
+  W1 <- W2 <- diag(1,p,p); W3 <- matrix(0,0.5*p,p); 
+  for (i in 1:(p/2)){
+    W3[i,2*i-1] <- 1
+    W3[i,2*i] <- 1
+  }
+  W <- rbind(W1,W2,W3)
+  if (type==0){
+    U <- (1-U.test)*U
+  }else{
+    U <- 1*((U+U.test)>0)
+  }
+  U <- U*matrix(runif(p*p,min=0.8,max=1.2)*sample(c(-1,1),p*p,replace = TRUE),p,p)
+  W <- W*matrix(runif(q*p,min=0.8,max=1.2)*sample(c(-1,1),q*p,replace = TRUE),q,p)
+  vari <- diag(runif(p,min=0.4,max=0.6))
+  sigma <- vari%*%diag(p)%*%vari
+  e <- mvrnorm(n,rep(0,p),sigma)
+  r <- p/2
+  V <- matrix(0,r,p)
+  for (i in 1:r){
+    V[i,2*i-1] <- 1
+    V[i,2*i] <- 1
+  }
+  V <- V*matrix(runif(r*p,min=0.4,max=0.6)*sample(c(-1,1),r*p,replace = TRUE),r,p)
+  Z <- matrix(rnorm(r*n),ncol=r)
+  X <- matrix(rnorm(q*n),ncol=q); Y <- matrix(0,n,p); Y <- (X%*%W+e+Z%*%V)%*%solve(diag(1,p)-U);
+  Sigma <- sigma+t(V)%*%V
+  return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
+}
+```
+
+```{r}
+## This part specifies edges to be tested.
+p <- 10;
+U.test1 <- matrix(0,p,p)
+U.test1[1,3] <- 1;
+```
+
+## Ancetral and interventional relationships estimation
+
+```{r}
+set.seed(0)
+p <- 10;n <- 500;
+generation <- random.generation(p,n,U.test1,type=0)
+X <- generation$X
+Y <- generation$Y
+U <- generation$U
+W <- generation$W
+V <- W%*%solve(diag(p)- U)
+tau.list1 <- seq(0.1,0.2,0.01)
+gamma.list1 <- seq(0.05,0.5,0.05)
+n.fold1 <- 5
+result.stage1_1 <- cv.intdag.pmle.diff.aic(X,Y,tau.list1,gamma.list1,n.fold1)
+V.es <- result.stage1_1$V
+result.stage1_2 <- topological_order(V.es)
+Pi_es <- result.stage1_2$an_mat ## Ancestral relationships
+Phi_es <- result.stage1_2$in_mat ## Interventional relationships
+Piv_es <- result.stage1_2$iv_mat ## Candidate set estimation
+```
+
+## Coefficient estimation(We use oracle relationships) 
+
+```{r}
+set.seed(1)
+p <- 10;n <- 200;
+generation <- random.generation(p,n,U.test1,type=0)
+X <- generation$X
+Y <- generation$Y
+U <- generation$U
+W <- generation$W
+V <- W%*%solve(diag(p)- U)
+
+tau.list2 <- seq(0.1,0.2,0.01)
+gamma.list2 <- seq(0.05,0.5,0.05)
+n.fold2 <- 5
+
+result.stage1_2 <- topological_order(V)
+Pi_es <- result.stage1_2$an_mat
+Phi_es <- result.stage1_2$in_mat
+Piv_es <- result.stage1_2$iv_mat
+
+result.stage2 <- cv.intdag.coe(X,Y,Pi_es,Phi_es,Piv_es,tau.list2,gamma.list2,n.fold2) ##  Coefficient estimation
+```
+
+## Precision matrix refit(We use the oracle residuals)
+
+```{r}
+set.seed(2)
+p <- 10;n <- 1000; max.it <- 100000; tol <- 1e-5
+generation <- random.generation(p,n,U.test1,type=0)
+X <- generation$X
+Y <- generation$Y
+U <- generation$U
+W <- generation$W
+tau.list3 <- seq(0.05,0.1,0.01)
+gamma.list3 <- seq(0.005,0.1,0.005)
+n.fold3 <- 5
+Z <- Y - Y%*%U - X%*%W
+MB <- cv.MB_Union(Z,tau.list3,gamma.list3,n.fold3)
+MB.support <- MB$S ## estimate the support
+Sigma_es <- generation$Sigma
+Sigma_es <- cov(Z)
+S_es <- precision_refit(Sigma_es,MB.support,max.it,tol) ## refit the precision matrix
+```
+
+## An illustration of whole procedure
+
+```{r}
+set.seed(3)
+p <- 10;n <- 1000; max.it <- 100000; tol <- 1e-5
+generation <- random.generation(p,n,U.test1,type=0)
+X <- generation$X
+Y <- generation$Y
+U <- generation$U
+W <- generation$W
+
+tau.list1 <- seq(0.1,0.2,0.01)
+gamma.list1 <- seq(0.05,0.5,0.05)
+n.fold1 <- 5
+result.stage1_1 <- cv.intdag.pmle.diff.aic(X,Y,tau.list1,gamma.list1,n.fold1)
+V.es <- result.stage1_1$V
+result.stage1_2 <- topological_order(V.es)
+Pi_es <- result.stage1_2$an_mat ## Ancestral relationships
+Phi_es <- result.stage1_2$in_mat ## Interventional relationships
+Piv_es <- result.stage1_2$iv_mat ## Candidate set estimation
+
+tau.list2 <- seq(0.1,0.2,0.01)
+gamma.list2 <- seq(0.05,0.5,0.05)
+n.fold2 <- 5
+result.stage2 <- cv.intdag.coe(X,Y,Pi_es,Phi_es,Piv_es,tau.list2,gamma.list2,n.fold2) ##  Coefficient estimation
+
+
+tau.list3 <- seq(0.05,0.1,0.01)
+gamma.list3 <- seq(0.005,0.1,0.005)
+n.fold3 <- 5
+Z <- Y - Y%*%result.stage2$U - X%*%result.stage2$W
+MB <- cv.MB_Union(Z,tau.list3,gamma.list3,n.fold3)
+MB.support <- MB$S ## estimate the support
+Sigma_es <- cov(Z) 
+S_es <- precision_refit(Sigma_es,MB.support,max.it,tol) ## refit the precision matrix
+
+U1 <- 1*((Pi_es+U.test1)>0)
+U0 <- U1 - U.test1
+intdag.2lr(X,Y,U0,Phi_es,U1,Phi_es,S_es)$statistic ## conduct inference, for a large graph, a localizatin version is recommended.
+```
+
