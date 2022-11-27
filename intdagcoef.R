@@ -1,5 +1,13 @@
 source("tlpreg.r",chdir = TRUE)
-## This function implements coefficient estimation for stage 2. 
+## This function implements coefficient estimation(GrIVET). 
+## X: A n*q matrix for intervention variables.
+## Y: A n*p matrix for primary variables.
+## Pi: A matrix representing non-zero elements' indices for U.
+## Phi: A matrix representing non-zero elements' indices for W.
+## Piv: A matrix representing non-zero elements' indices for candidate IVs.
+## tau.list: A set of taus to be selected for TLP.
+## gamma.list: A set pf gammas to be selected for TLP.
+## n.fold: Number of folds in cross-validation.
 cv.intdag.coe <- function(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold){
   
   n <- nrow(X)
@@ -95,6 +103,14 @@ cv.intdag.coe <- function(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold){
   return(list(U=U,W=W,Sigma=Sigma,taus=taus,gammas=gammas))
 }
 
+## This function implements coefficient estimation, however, the parameter of interests are also penalized. 
+## X: A n*q matrix for intervention variables.
+## Y: A n*p matrix for primary variables.
+## Pi: A matrix representing non-zero elements' indices for U.
+## Phi: A matrix representing non-zero elements' indices for W.
+## Piv: A matrix representing non-zero elements' indices for candidate IVs.## tau.list: A set of taus to be selected for TLP.
+## gamma.list: A set pf gammas to be selected for TLP.
+## n.fold: Number of folds in cross-validation.
 cv.intdag.coe.penalized <- function(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold){
   
   n <- nrow(X)
@@ -190,7 +206,8 @@ cv.intdag.coe.penalized <- function(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold){
   return(list(U=U,W=W,Sigma=Sigma,taus=taus,gammas=gammas))
 }
 
-## This function returns estimate of a single element in matrix U
+## This function returns estimates of elements in U
+## This function will be used in cv.intdag.coe()
 coef.single <- function(Y,X,Z1,Z2,tau.list,gamma.list,n.fold){
   X.cbind <- cbind(X,Z1,Z2)
   p <- ncol(X.cbind)
@@ -230,6 +247,8 @@ coef.single <- function(Y,X,Z1,Z2,tau.list,gamma.list,n.fold){
   return(list(b=b[1:q1],tau=tau,gamma=gamma))
 }
 
+## This function returns estimates of elements in U but with parameters of interests also penalized.
+## This function will be used in cv.intdag.coe.penalized()
 coef.single.penalized <- function(Y,X,Z1,Z2,tau.list,gamma.list,n.fold){
   X.cbind <- cbind(X,Z1,Z2)
   p <- ncol(X.cbind)
@@ -245,6 +264,7 @@ coef.single.penalized <- function(Y,X,Z1,Z2,tau.list,gamma.list,n.fold){
 
 ## This function finds relationships of parents, ancestors, interventions and 
 ## interventions of ancestors to be used in coefficient estimation
+## This function will be used in cv.intdag.coe(),cv.intdag.coe.penalized()
 relations.finder <- function(U,W){
   p <- nrow(U)
   q <- nrow(W)
@@ -272,6 +292,7 @@ relations.finder <- function(U,W){
 
 ## This function finds topological depth of primary variables,U should be a matrix
 ## with 0 representing zero elements and 1 representing non-zero elements
+## This function will be used in cv.intdag.coe(),cv.intdag.coe.penalized()
 topo.depth <- function(U){
   p <- nrow(U)
   depth <- rep(p,p)
@@ -294,6 +315,7 @@ topo.depth <- function(U){
 
 ## These two functions are to determine estimation order of elements in U, U should be a matrix
 ## with 0 representing zero elements and 1 representing non-zero elements
+## This function will be used in cv.intdag.coe(),cv.intdag.coe.penalized()
 es.order <- function(U,depth){
   p <- nrow(U)
   order.mat <- outer(depth,depth,function(x,y){y*(y-1)/2 + y-x})

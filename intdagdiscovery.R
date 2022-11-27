@@ -1,7 +1,11 @@
 source("tlpreg.r",chdir = TRUE)
 library(cvTools)
 
-## Different taus and gammas for each equation
+## This function estimates matrix V.
+## X: A n*q matrix for intervention variables.
+## Y: A n*p matrix for primary variables.
+## taus: Parameter used for TLP in each regression model where Y[,i] is the response with X the predictor matrix.
+## gammas: Parameter used for TLP in each regression model where Y[,i] is the response with X the predictor matrix.
 intdag.pmle.diff.aic <- function(X,Y,taus,gammas){
   p <- ncol(Y)
   q <- ncol(X)
@@ -31,6 +35,12 @@ intdag.pmle.diff.aic <- function(X,Y,taus,gammas){
   return(V)
 }
 
+## This function estimates matrix V with cross-validation to select tunning parameters.
+## X: A n*q matrix for intervention variables.
+## Y: A n*p matrix for primary variables.
+## tau.list: A set of taus to be selected for TLP.
+## gamma.list: A set pf gammas to be selected for TLP.
+## n.fold: Number of folds to be used.
 cv.intdag.pmle.diff.aic <- function(X,Y,tau.list,gamma.list,n.fold){
   p <- ncol(Y)
   taus <- numeric(p)
@@ -44,6 +54,8 @@ cv.intdag.pmle.diff.aic <- function(X,Y,tau.list,gamma.list,n.fold){
   return(list(V=V,taus=taus,gammas=gammas))
 }
 
+## This function implements Algorithm 2 in the paper.
+## v: A q*p matrix encoding relationships among Y and X.
 topological_order <- function(v) {
   p <- ncol(v)
   q <- nrow(v)

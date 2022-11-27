@@ -1,5 +1,11 @@
 source("tlpreg.r",chdir = TRUE)
 library(mnormt)
+
+## This function select best tunning parameters for TLP in recovering precision matrix's support.
+## R: Data matrix consisting of variables whose precision matrix is of interests.
+## tau.list: A set of taus to be selected for TLP.
+## gamma.list: A set pf gammas to be selected for TLP.
+## n.fold: Number of folds in cross-validation.
 cv.MB_Union <- function(R,tau.list,gamma.list,n.fold){
   p <- ncol(R)
   taus <- numeric(p)
@@ -13,6 +19,11 @@ cv.MB_Union <- function(R,tau.list,gamma.list,n.fold){
   return(list(S=S,taus=taus,gammas=gammas))
 }
 
+## This function estimate the precision matrix's support using TLP with taus[i], gammas[i] as the parameter to estimate non-zero
+## indices for non-diagnoal i-th column of precision matrix.
+## R: Data matrix consisting of variables whose precision matrix is of interests.
+## taus: Parameter used for TLP in each regression model where R[,i] is the response and R[,-i] is predictor matrix.
+## gammas: Parameter used for TLP in each regression model where R[,i] is the response and R[,-i] is predictor matrix.
 MB_Union <- function(R,taus,gammas){
   p <- ncol(R)
   q <- p-1
@@ -45,6 +56,12 @@ MB_Union <- function(R,taus,gammas){
   S <- 1*(V*t(V)!=0)
   return(S)
 }
+
+## This function refit the precision matrix using BCD algorithm with details given in Appendix.
+## Sigma: Covariance matrix.
+## S: Support of the precision matrix.
+## max.it : Maximum number of iterations allowed.
+## tol: Tolerance of stopping criterion. 
 
 precision_refit <- function(Sigma,S,max.it,tol){
   
