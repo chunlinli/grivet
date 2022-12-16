@@ -1,6 +1,5 @@
 ---
 title: "Real Data Analysis Final"
-author: "Li Chen"
 date: "5/30/2022"
 output:
   pdf_document:
