@@ -77,6 +77,15 @@ Rscript summary_part2_setting1.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part2/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting1/`.
 
+## Citing information
+
+The code is maintained on [GitHub](https://github.com/chunlinli/grivet). 
+This project is in development.
+
+Implementing the structure learning algorithms is error-prone. 
+If you spot any error, please file an issue [here](https://github.com/chunlinli/grivet/issues) or contact me via [email](mailto:chen7019@umn.edu) -- 
+I will be grateful to be informed.
+
 ## References
 
 [1] Frot, B., Nandy, P., & Maathuis, M. H.  (2019).
@@ -93,7 +102,7 @@ Open-sourced software: [pcalg](https://github.com/cran/pcalg).
 
 
 In addition, part of the simulation code is adapted from 
-[Frot's code](https://github.com/benjaminfrot/lrpsadmm-examples)
+[Frot's code](https://github.com/benjaminfrot/lrpsadmm-examples).
 
 **I would like to thank the authors of above open-sourced software.**
 
