@@ -42,6 +42,35 @@ install.packages(pkg)
 
 NOTE: some packages have dependencies unavailable from CRAN. The user may need to install them manually.
 
+## Reproducing Simulations.
+
+To reproduce the simulation results in the paper, change the working directory using the following Bash script.
+
+```bash
+cd simulations
+```
+
+### System information 
+
+The code is tested on a server with specs:
+```
+System Version:             Ubuntu 18.04.6 LTS 4.15.0-176-generic x86_64
+Model name:                 Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz
+Total Number of Cores:      64
+Memory:                     528 GB
+```
+No GPU is required.
+
+### Table 1
+
+```bash
+Rscript comparison1_setting1_simu.R
+Rscript summary_part1_setting1.R
+```
+The simulation results will be stored in `./simulations/primary_results/part1/setting1` and the summary will be printed and stored in `./simulations/summary_results/part1/setting1`.
+
+
+
 
 
 
