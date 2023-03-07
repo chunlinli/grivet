@@ -42,7 +42,7 @@ install.packages(pkg)
 
 NOTE: some packages have dependencies unavailable from CRAN. The user may need to install them manually.
 
-## Reproducing Simulations.
+## Simulation Reproductions
 
 To reproduce the simulation results in the paper, change the working directory using the following Bash script.
 
@@ -62,14 +62,40 @@ Memory:                     528 GB
 No GPU is required.
 
 ### Table 1
-
+To reproduce Table 1, run the following bash script.
 ```bash
 Rscript comparison1_setting1_simu.R
 Rscript summary_part1_setting1.R
 ```
-The simulation results will be stored in `./simulations/primary_results/part1/setting1` and the summary will be printed and stored in `./simulations/summary_results/part1/setting1`.
+The simulation results will be stored in `./simulations/primary_results/part1/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part1/setting1/`.
+
+### Table 2
+To reproduce Table 2, run the following bash script.
+```bash
+Rscript comparison2_setting1_simu.R
+Rscript summary_part2_setting1.R
+```
+The simulation results will be stored in `./simulations/primary_results/part2/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting1/`.
+
+## References
+
+[1] Frot, B., Nandy, P., & Maathuis, M. H.  (2019).
+[Robust causal structure learning with some hidden variables](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12315), JRSSB. 
+Open-sourced softwares: LRpS+GES is implemented by [lrpsadmm](https://github.com/benjaminfrot/lrpsadmm) and [pcalg](https://github.com/cran/pcalg).
+
+[2] Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012).
+[Learning high-dimensional directed acyclic graphs with latent and selection variables](https://projecteuclid.org/journals/annals-of-statistics/volume-40/issue-1/Learning-high-dimensional-directed-acyclic-graphs-with-latent-and-selection/10.1214/11-AOS940.full), AOS. 
+Open-sourced software: RFCI is implemented by [pcalg](https://github.com/cran/pcalg).
+
+[3] Kalisch, M., Mächler, M., Colombo, D., Maathuis, M. H., & Bühlmann, P. (2012).
+[Causal Inference Using Graphical Models with the R Package pcalg](https://www.jstatsoft.org/article/view/v047i11), JSS. 
+Open-sourced software: [pcalg](https://github.com/cran/pcalg).
 
 
+In addition, part of the simulation code is adapted from 
+[Frot's code](https://github.com/benjaminfrot/lrpsadmm-examples)
+
+**I would like to thank the authors of above open-sourced software.**
 
 
 
