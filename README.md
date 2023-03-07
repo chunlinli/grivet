@@ -1,31 +1,49 @@
-# GrIVET: Graphical Instrumental Variables Estimation and Testing
+# Graphical Instrumental Variables Estimation and Testing
 This repository contains an implementation of the following paper 
 
-- Causal discovery and inference with confounders. Submitted.
+- Discovery and inference of a causal network with hidden confounding. Submitted.
 
 The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation and **T**esting(GrIVET).
 
 ## Contents
 
-- `intdagdiscovery.R`: implements peeling algorithm for discovery of ancestral and interventional relationships.
+-  `./grivet/`: contains an R package for algorithm implementations.
 
-- `intdagcoef.R`: implements coefficient estimation given the ancestral and interventional relationships.
+- `./real_data/`: contains ADNI data and its analysis with GrIVET.
 
-- `mbtlp.R`: estimates precision matrix.
+- `./simulations/*.R`: contains R scripts for simulations and summaries.
 
-- `intdaginfer.r`: conducts hypothesis testing given the ancestral and interventional relationships along with a precision matrix.
+- `./simulations/primary_results`: stores simulation results.
 
-- `./real_data/`: ADNI data and its analysis with GrIVET.
+- `./simulations/summary_results`: stores summaries of simulation results.
 
-- `./simulations/`: simulations and simulated data.
+## Package Installations
 
-## Preliminaries
+For R, the testing version is 4.1.0. To install the package, run the following Bash script to build and install the R package.
 
-To use the code, you need to compile C code `ctlpreg.c`. In terminal,
+```bash
+R CMD build grivet
+R CMD install grivet_1.0.tar.gz
 ```
-R CMD SHLIB ctlpreg.c
+
+Note: replace "grivet_1.0.tar.gz" by the file built if applicable.
+
+The following packages are used.
+
+```r
+pkg <- c(
+    "stats", "cvTools", " mnormt", # for R package
+    "ggcorrplot", # for real data analysis
+    "doParallel", "mvtnorm", "MASS", "lrpsadmm", "bnlearn","pcalg","clusterGeneration",
+    "ggplot2" # for simulations
+)
+install.packages(pkg)
 ```
 
-## Usage
+NOTE: some packages have dependencies unavailable from CRAN. The user may need to install them manually.
 
-An illustration of usage is provided in `ill_usage.Rmd`
+
+
+
+
+
