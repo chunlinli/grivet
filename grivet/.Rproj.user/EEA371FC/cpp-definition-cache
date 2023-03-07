@@ -1,0 +1,41 @@
+[
+    {
+        "file": "/Users/lichen/Library/CloudStorage/Dropbox/packages/grivet/grivet/src/ctlpreg.c",
+        "file_last_write": 1677475510.0,
+        "definitions": [
+            {
+                "usr": "c:@F@classo",
+                "kind": 6,
+                "parent_name": "",
+                "name": "classo(double *, double *, double *, double *, double *, int *, int *, double *, int *, double *, int *)",
+                "file": "/Users/lichen/Library/CloudStorage/Dropbox/packages/grivet/grivet/src/ctlpreg.c",
+                "line": 4,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@ctlpreg0",
+                "kind": 6,
+                "parent_name": "",
+                "name": "ctlpreg0(double *, double *, double *, double *, double *, int *, int *, double *, double *, int *, double *, int *, int *)",
+                "file": "/Users/lichen/Library/CloudStorage/Dropbox/packages/grivet/grivet/src/ctlpreg.c",
+                "line": 71,
+                "column": 6
+            }
+        ]
+    },
+    {
+        "file": "/Users/lichen/Library/CloudStorage/Dropbox/packages/grivet/grivet/src/grivet_init.c",
+        "file_last_write": 1677480220.0,
+        "definitions": [
+            {
+                "usr": "c:@F@R_init_markovchain",
+                "kind": 6,
+                "parent_name": "",
+                "name": "R_init_markovchain(DllInfo *)",
+                "file": "/Users/lichen/Library/CloudStorage/Dropbox/packages/grivet/grivet/src/grivet_init.c",
+                "line": 7,
+                "column": 6
+            }
+        ]
+    }
+]
