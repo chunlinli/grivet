@@ -77,14 +77,79 @@ Rscript summary_part2_setting1.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part2/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting1/`.
 
-## Citing information
+### Table 3
+To reproduce Hub Graph part of Table 3, run the following bash script.
+```bash
+Rscript infer_setting1_hub.R
+Rscript summary_infer_setting1_hub.R
+```
+The simulation results will be stored in `./simulations/primary_results/part3/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting1/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting1/figures/`.
 
-The code is maintained on [GitHub](https://github.com/chunlinli/grivet). 
-This project is in development.
+To reproduce Random Graph part of Table 3, run the following bash script.
+```bash
+Rscript infer_setting1_random.R
+Rscript summary_infer_setting1_random.R
+```
+The simulation results will be stored in `./simulations/primary_results/part3/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting1/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting1/figures/`.
 
-Implementing the structure learning algorithms is error-prone. 
-If you spot any error, please file an issue [here](https://github.com/chunlinli/grivet/issues) or contact me via [email](mailto:chen7019@umn.edu) -- 
-I will be grateful to be informed.
+### Figure 
+
+To reproduce Figure .., run the following bash script.
+```bash
+Rscript comparison4_discovery.R
+Rscript comparison4_estimation.R
+Rscript summary_part4.R
+```
+The simulation results will be stored in `./simulations/primary_results/part4/discovery/` and `./simulations/primary_results/part4/estimation/` and the summary of performance of structure learning will be printed and the figures will be stored in `./simulations/summary_results/part4/`.
+
+### Figure 
+
+To reproduce Figure .., run the following bash script.
+```bash
+Rscript infer_part5.R
+Rscript summary_part5.R
+```
+The simulation results will be stored in `./simulations/primary_results/part5/` and the boxplots will be stored in  `./simulations/summary_results/part5/`.
+
+### Table 1(Supplementary Materials)
+To reproduce Table 1(Supplementary Materials), run the following bash script.
+```bash
+Rscript comparison1_setting2_simu.R
+Rscript summary_part1_setting2.R
+```
+The simulation results will be stored in `./simulations/primary_results/part1/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part1/setting2/`.
+
+### Table 2(Supplementary Materials)
+To reproduce Table 2(Supplementary Materials), run the following bash script.
+```bash
+Rscript comparison2_setting2_simu.R
+Rscript summary_part2_setting2.R
+```
+The simulation results will be stored in `./simulations/primary_results/part2/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting2/`.
+
+### Table 3(Supplementary Materials)
+To reproduce Table 3(Supplementary Materials), run the following bash script.
+```bash
+Rscript comparison2_setting3_simu.R
+Rscript summary_part2_setting3.R
+```
+The simulation results will be stored in `./simulations/primary_results/part2/setting3/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting3/`.
+
+### Table 4(Supplementary Materials)
+To reproduce Hub Graph part of Table 4(Supplementary Materials), run the following bash script.
+```bash
+Rscript infer_setting2_hub.R
+Rscript summary_infer_setting2_hub.R
+```
+The simulation results will be stored in `./simulations/primary_results/part3/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting2/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting2/figures/`.
+
+To reproduce Random Graph part of Table 3(Supplementary Materials), run the following bash script.
+```bash
+Rscript infer_setting2_random.R
+Rscript summary_infer_setting2_random.R
+```
+The simulation results will be stored in `./simulations/primary_results/part3/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting2/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting2/figures/`.
+
 
 ## References
 
