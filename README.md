@@ -62,7 +62,7 @@ Memory:                     528 GB
 No GPU is required.
 
 ### Table 1
-To reproduce Table 1, run the following bash script.
+To reproduce Table 1, run the following bash script(Approximately 34 hours).
 ```bash
 Rscript comparison1_setting1_simu.R
 Rscript summary_part1_setting1.R
@@ -70,7 +70,7 @@ Rscript summary_part1_setting1.R
 The simulation results will be stored in `./simulations/primary_results/part1/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part1/setting1/`.
 
 ### Table 2
-To reproduce Table 2, run the following bash script.
+To reproduce Table 2, run the following bash script(Approximately 21.5 hours).
 ```bash
 Rscript comparison2_setting1_simu.R
 Rscript summary_part2_setting1.R
@@ -78,14 +78,14 @@ Rscript summary_part2_setting1.R
 The simulation results will be stored in `./simulations/primary_results/part2/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting1/`.
 
 ### Table 3
-To reproduce Hub Graph part of Table 3, run the following bash script.
+To reproduce Hub Graph part of Table 3, run the following bash script(Approximately 24 hours).
 ```bash
 Rscript infer_setting1_hub.R
 Rscript summary_infer_setting1_hub.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part3/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting1/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting1/figures/`.
 
-To reproduce Random Graph part of Table 3, run the following bash script.
+To reproduce Random Graph part of Table 3, run the following bash script(Approximately 31 hours).
 ```bash
 Rscript infer_setting1_random.R
 Rscript summary_infer_setting1_random.R
@@ -94,7 +94,7 @@ The simulation results will be stored in `./simulations/primary_results/part3/se
 
 ### Figure 
 
-To reproduce Figure .., run the following bash script.
+To reproduce Figure .., run the following bash script(Approximately 17 hours).
 ```bash
 Rscript comparison4_discovery.R
 Rscript comparison4_estimation.R
@@ -104,7 +104,7 @@ The simulation results will be stored in `./simulations/primary_results/part4/di
 
 ### Figure 
 
-To reproduce Figure .., run the following bash script.
+To reproduce Figure .., run the following bash script(Approximately 17.5 hours).
 ```bash
 Rscript infer_part5.R
 Rscript summary_part5.R
@@ -112,7 +112,7 @@ Rscript summary_part5.R
 The simulation results will be stored in `./simulations/primary_results/part5/` and the boxplots will be stored in  `./simulations/summary_results/part5/`.
 
 ### Table 1(Supplementary Materials)
-To reproduce Table 1(Supplementary Materials), run the following bash script.
+To reproduce Table 1(Supplementary Materials), run the following bash script(Approximately 12.5 hours).
 ```bash
 Rscript comparison1_setting2_simu.R
 Rscript summary_part1_setting2.R
@@ -120,7 +120,7 @@ Rscript summary_part1_setting2.R
 The simulation results will be stored in `./simulations/primary_results/part1/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part1/setting2/`.
 
 ### Table 2(Supplementary Materials)
-To reproduce Table 2(Supplementary Materials), run the following bash script.
+To reproduce Table 2(Supplementary Materials), run the following bash script(Approximately 3.5 hours).
 ```bash
 Rscript comparison2_setting2_simu.R
 Rscript summary_part2_setting2.R
@@ -128,7 +128,7 @@ Rscript summary_part2_setting2.R
 The simulation results will be stored in `./simulations/primary_results/part2/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting2/`.
 
 ### Table 3(Supplementary Materials)
-To reproduce Table 3(Supplementary Materials), run the following bash script.
+To reproduce Table 3(Supplementary Materials), run the following bash script(Approximately 3.5 hours).
 ```bash
 Rscript comparison2_setting3_simu.R
 Rscript summary_part2_setting3.R
@@ -136,14 +136,14 @@ Rscript summary_part2_setting3.R
 The simulation results will be stored in `./simulations/primary_results/part2/setting3/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting3/`.
 
 ### Table 4(Supplementary Materials)
-To reproduce Hub Graph part of Table 4(Supplementary Materials), run the following bash script.
+To reproduce Hub Graph part of Table 4(Supplementary Materials), run the following bash script(Approximately 2.5 hours).
 ```bash
 Rscript infer_setting2_hub.R
 Rscript summary_infer_setting2_hub.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part3/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting2/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting2/figures/`.
 
-To reproduce Random Graph part of Table 3(Supplementary Materials), run the following bash script.
+To reproduce Random Graph part of Table 3(Supplementary Materials), run the following bash script(Approximately 5.5 hours).
 ```bash
 Rscript infer_setting2_random.R
 Rscript summary_infer_setting2_random.R
