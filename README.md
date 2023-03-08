@@ -52,12 +52,11 @@ cd simulations
 
 ### System information 
 
-The code is tested on a server with specs:
+The simulations are tested with a request of 2 nodes and 60 GB memory on a server with specs of each node:
 ```
-System Version:             Ubuntu 18.04.6 LTS 4.15.0-176-generic x86_64
-Model name:                 Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz
-Total Number of Cores:      64
-Memory:                     528 GB
+System Version:             Linux cn0203 3.10.0-1160.83.1.el7.x86_64
+Model name:                 Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz
+CPU(s):                     24
 ```
 No GPU is required.
 
