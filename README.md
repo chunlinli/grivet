@@ -9,7 +9,7 @@ The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation 
 
 -  `./grivet/`: contains an R package for algorithm implementations.
 
-- `./real_data/`: contains ADNI data and its analysis with GrIVET.
+- `./real_data/`: contains analysis of ADNI data with GrIVET.
 
 - `./simulations/*.R`: contains R scripts for simulations and summaries.
 
