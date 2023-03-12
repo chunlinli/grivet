@@ -93,7 +93,7 @@ The simulation results will be stored in `./simulations/primary_results/part3/se
 
 ### Figure 
 
-To reproduce Figure .., run the following bash script(Approximately 17 hours).
+To reproduce Figure .., run the following bash script(Approximately 20 hours).
 ```bash
 Rscript comparison4_discovery.R
 Rscript comparison4_estimation.R

@@ -1,3 +1,8 @@
+viv <- rep(c(1:6),3)
+group <- rep(1:3,each=6)
+library(ggplot2)
+
+
 ### Discovery Part
 path_used <- "./primary_results/part4/discovery/"
 stats_hub1 <- read.csv(file = paste(path_used,"stats_hub1.csv",sep=""),header=TRUE)
@@ -11,7 +16,97 @@ result.mat.discovery <- rbind(colMeans(stats_hub1),colMeans(stats_hub2),colMeans
 rownames(result.mat.discovery) <- c("(H,C,n=1000)","(H,C,n=500)","(H,C,n=200)","(H,D,n=1000)","(H,D,n=500)","(H,D,n=200)")
 colnames(result.mat.discovery) <- rep(c("FDR","JCI","TPR","SHD"),6)
 
-print(result.mat.discovery)
+## Plot for TPR, continuous
+mat1 <- result.mat.discovery[1:3,(1:6)*4-1]
+TPR <- as.numeric(t(mat1))
+mat1 <- cbind(viv,TPR,group)
+mat1 <- as.data.frame(mat1)
+mat1$group <- as.factor(mat1$group)
+p1<-ggplot(mat1, aes(x=viv, y=TPR, group=group)) +
+  geom_line(aes(color=group))+
+  geom_point(aes(color=group))+
+  ylim(0,1)+
+  scale_color_manual(labels = c("n=1000", "n=500", "n=200"),values = c("#E64B35B2","#4DBBD5B2","#00A087B2"))+
+  xlab("the number of valid IVs")+
+  ylab("average true positive rate")+
+  scale_x_continuous(breaks=1:6)+
+  theme_bw()
+pdf(
+  file ="./summary_results/part4/ctpr.pdf",
+  width = 6, 
+  height = 5
+)
+p1
+dev.off()
+
+## Plot for TPR, discrete
+mat1 <- result.mat.discovery[4:6,(1:6)*4-1]
+TPR <- as.numeric(t(mat1))
+mat1 <- cbind(viv,TPR,group)
+mat1 <- as.data.frame(mat1)
+mat1$group <- as.factor(mat1$group)
+p2<-ggplot(mat1, aes(x=viv, y=TPR, group=group)) +
+  geom_line(aes(color=group))+
+  geom_point(aes(color=group))+
+  ylim(0,1)+
+  scale_color_manual(labels = c("n=1000", "n=500", "n=200"),values = c("#E64B35B2","#4DBBD5B2","#00A087B2"))+
+  xlab("the number of valid IVs")+
+  ylab("average true positive rate")+
+  scale_x_continuous(breaks=1:6)+
+  theme_bw()
+pdf(
+  file ="./summary_results/part4/dtpr.pdf",
+  width = 6, 
+  height = 5
+)
+p2
+dev.off()
+
+## Plot for JCI, continuous
+mat1 <- result.mat.discovery[1:3,(1:6)*4-2]
+JCI <- as.numeric(t(mat1))
+mat1 <- cbind(viv,JCI,group)
+mat1 <- as.data.frame(mat1)
+mat1$group <- as.factor(mat1$group)
+p3<-ggplot(mat1, aes(x=viv, y=JCI, group=group)) +
+  geom_line(aes(color=group))+
+  geom_point(aes(color=group))+
+  ylim(0,1)+
+  scale_color_manual(labels = c("n=1000", "n=500", "n=200"),values = c("#E64B35B2","#4DBBD5B2","#00A087B2"))+
+  xlab("the number of valid IVs")+
+  ylab("average Jaccard index")+
+  scale_x_continuous(breaks=1:6)+
+  theme_bw()
+pdf(
+  file ="./summary_results/part4/cjci.pdf",
+  width = 6, 
+  height = 5
+)
+p3
+dev.off()
+
+## Plot for JCI, discrete
+mat1 <- result.mat.discovery[4:6,(1:6)*4-2]
+JCI <- as.numeric(t(mat1))
+mat1 <- cbind(viv,JCI,group)
+mat1 <- as.data.frame(mat1)
+mat1$group <- as.factor(mat1$group)
+p4<-ggplot(mat1, aes(x=viv, y=JCI, group=group)) +
+  geom_line(aes(color=group))+
+  geom_point(aes(color=group))+
+  ylim(0,1)+
+  scale_color_manual(labels = c("n=1000", "n=500", "n=200"),values = c("#E64B35B2","#4DBBD5B2","#00A087B2"))+
+  xlab("the number of valid IVs")+
+  ylab("average Jaccard index")+
+  scale_x_continuous(breaks=1:6)+
+  theme_bw()
+pdf(
+  file ="./summary_results/part4/djci.pdf",
+  width = 6, 
+  height = 5
+)
+p4
+dev.off()
 
 ### Estimation Part
 path_used <- "./primary_results/part4/estimation/"
@@ -25,9 +120,6 @@ stats_hub6 <- read.csv(file = paste(path_used,"stats_hub6.csv",sep=""),header=TR
 result.mat.estimation <- rbind(colMeans(stats_hub1),colMeans(stats_hub2),colMeans(stats_hub3),colMeans(stats_hub4),colMeans(stats_hub5),colMeans(stats_hub6))
 rownames(result.mat.estimation) <- c("(H,C,n=1000)","(H,C,n=500)","(H,C,n=200)","(H,D,n=1000)","(H,D,n=500)","(H,D,n=200)")
 colnames(result.mat.estimation) <- rep(c("MaaD","MeaD","MesD"),6)
-viv <- rep(c(1:6),3)
-group <- rep(1:3,each=6)
-library(ggplot2)
 
 ## Plot for maad, continuous
 mat1 <- result.mat.estimation[1:3,(1:6)*3-2]

@@ -71,7 +71,7 @@ simu <- function(i){
 
 len.stat <- 18
 clusterExport(cl,c("simu","len.stat"))
-stats.hub <- parLapply(cl,1:10,function(i){set.seed(i);stat <- simu(i);return(stat)})
+stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);stat <- simu(i);return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=len.stat)
 write.csv(stats_hub,file.path("./primary_results/part4/estimation/","stats_hub1.csv"),row.names = FALSE)
 
@@ -133,7 +133,7 @@ simu <- function(i){
 
 len.stat <- 18
 clusterExport(cl,c("simu","len.stat"))
-stats.hub <- parLapply(cl,1:10,function(i){set.seed(i);stat <- simu(i);return(stat)})
+stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);stat <- simu(i);return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=len.stat)
 write.csv(stats_hub,file.path("./primary_results/part4/estimation/","stats_hub3.csv"),row.names = FALSE)
 
@@ -227,7 +227,7 @@ simu <- function(i){
 
 len.stat <- 18
 clusterExport(cl,c("simu","len.stat"))
-stats.hub <- parLapply(cl,1:10,function(i){set.seed(i);stat <- simu(i);return(stat)})
+stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);stat <- simu(i);return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=len.stat)
 write.csv(stats_hub,file.path("./primary_results/part4/estimation/","stats_hub6.csv"),row.names = FALSE)
 
