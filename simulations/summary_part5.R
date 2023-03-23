@@ -24,8 +24,16 @@ p1 <- ggplot(emp.h0, aes(x=n, y=emp, fill = n)) +
   geom_boxplot()+
   facet_wrap(~intervention)+
   scale_fill_manual(values = cols)+
+  guides(fill = "none")+
   ylab("empirical rejection probabilities")+
-  theme_bw()
+  theme_bw()+
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 10),
+        strip.text = element_text(size = 16))
 pdf(
   file ="./summary_results/part5/rejh0.pdf",
   width = 6, 
@@ -52,8 +60,16 @@ p2 <- ggplot(emp.ha, aes(x=n, y=emp, fill = n)) +
   geom_boxplot()+
   facet_wrap(~intervention)+
   scale_fill_manual(values = cols)+
+  guides(fill = "none")+
   ylab("empirical rejection probabilities")+
-  theme_bw()
+  theme_bw()+
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 10),
+        strip.text = element_text(size = 16))
 pdf(
   file ="./summary_results/part5/rejha.pdf",
   width = 6, 

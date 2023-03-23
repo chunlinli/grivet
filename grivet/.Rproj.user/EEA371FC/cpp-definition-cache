@@ -25,13 +25,13 @@
     },
     {
         "file": "/Users/lichen/Library/CloudStorage/Dropbox/Inference for a causal interventional model with confounders/grivet/grivet/src/grivet_init.c",
-        "file_last_write": 1677480220.0,
+        "file_last_write": 1679329606.0,
         "definitions": [
             {
-                "usr": "c:@F@R_init_markovchain",
+                "usr": "c:@F@R_init_grivet",
                 "kind": 6,
                 "parent_name": "",
-                "name": "R_init_markovchain(DllInfo *)",
+                "name": "R_init_grivet(DllInfo *)",
                 "file": "/Users/lichen/Library/CloudStorage/Dropbox/Inference for a causal interventional model with confounders/grivet/grivet/src/grivet_init.c",
                 "line": 7,
                 "column": 6
