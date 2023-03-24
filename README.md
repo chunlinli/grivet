@@ -5,6 +5,9 @@ This repository contains an implementation of the following paper
 
 The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation and **T**esting(GrIVET).
 
+<img src="GrIVET.png" alt="GrIVET" width="400"/>
+
+
 ## Contents
 
 -  `./grivet/`: contains an R package for algorithm implementations.
