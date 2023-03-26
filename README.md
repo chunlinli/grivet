@@ -38,7 +38,7 @@ pkg <- c(
     "stats", "cvTools", " mnormt", # for R package
     "ggcorrplot", # for real data analysis
     "doParallel", "mvtnorm", "MASS", "lrpsadmm", "bnlearn","pcalg","clusterGeneration",
-    "ggplot2" # for simulations
+    "ggplot2", "cowplot", "gridExtra" # for simulations
 )
 install.packages(pkg)
 ```

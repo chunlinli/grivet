@@ -1,7 +1,8 @@
 viv <- rep(c(1:6),3)
 group <- rep(1:3,each=6)
 library(ggplot2)
-
+library(cowplot)
+library(gridExtra)
 
 ### Discovery Part
 path_used <- "./primary_results/part4/discovery/"
