@@ -140,8 +140,30 @@ topological_order <- function(v) {
   }
   
   # reconstruction of topological order
-  an_mat <- (solve(diag(p) - an_mat) != 0) - diag(p)
+  an_mat_interm <- (solve(diag(p) - an_mat) != 0) - diag(p)
+  if(is.acyclic(an_mat_interm)){
+    an_mat <- an_mat_interm
+  }else{
+    an_mat_interm <- an_mat
+    for(l in 1:p){
+      an_mat_interm <- an_mat_interm %*% an_mat
+      an_mat <- an_mat + an_mat_interm
+    }
+  }
   in_mat <- 1*(in_mat%*%(diag(p)+an_mat)>0)
   
   list(an_mat = an_mat, in_mat = in_mat, iv_mat = iv_mat)
+}
+
+is.acyclic <- function(U){
+  flag <- 1
+  while (sum(U)>0){
+    if (min(colSums(U))>0){
+      flag <- 0
+      break
+    }
+    idx <- which(colSums(U)!=0)
+    U <- U[idx,idx,drop=FALSE]
+  }
+  return(flag)
 }

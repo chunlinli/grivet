@@ -76,18 +76,24 @@ cv.tlpreg0 <- function(y,X,tau.list,gamma.list,n.fold,b.init=rep(0,ncol(X)),pen.
         b.ols <- matrix(0,q,1)
         b <- tlpreg0(y=y.train,X=X.train,tau=tau,gamma=gamma,b.init=b.init,pen.fac=pen.fac,tol=tol,dc.maxit=dc.maxit,cd.maxit=cd.maxit)
         ind <- b!=0
-        if (sum(ind)==0){
-          b.ols[,1] <- b
+        if (sum(is.na(ind)) == 0){
+          if (sum(ind)==0){
+            b.ols[,1] <- b
+          }else{
+            mod <- lm(y.train~X.train[,ind,drop=FALSE])
+            b.ols[ind,1] <- as.numeric(mod$coefficients)[-1]
+          }
+          cvm.sub[k] <- mean((y.test-X.test%*%b.ols)^2)
         }else{
-          mod <- lm(y.train~X.train[,ind,drop=FALSE])
-          b.ols[ind,1] <- as.numeric(mod$coefficients)[-1]
+          cvm.sub[k] <- NA
         }
-        cvm.sub[k] <- mean((y.test-X.test%*%b.ols)^2)
       }
       cvm[i,j] <- mean(cvm.sub)
     }
   }
-  locations <- as.numeric(which(cvm==min(cvm,na.rm = TRUE),arr.ind = TRUE)[1,])
+
+  try(locations <- as.numeric(which(cvm==min(cvm,na.rm = TRUE),arr.ind = TRUE)[1,]),{warning("You may change the penalty parameters used");
+    locations <- c(ceiling(length(tau.list)/2),ceiling(length(gamma.list)/2))})
   tau <- tau.list[locations[1]]
   gamma <- gamma.list[locations[2]]
   return(list(tau=tau,gamma=gamma))
@@ -131,22 +137,26 @@ cv.tlpreg0.aic <- function(y,X,tau.list,gamma.list,n.fold,b.init=rep(0,ncol(X)),
         b.ols <- matrix(0,q,1)
         b <- tlpreg0(y=y.train,X=X.train,tau=tau,gamma=gamma,b.init=b.init,pen.fac=pen.fac,tol=tol,dc.maxit=dc.maxit,cd.maxit=cd.maxit)
         ind <- b!=0
-        if (sum(ind)==0){
-          b.ols[,1] <- b
-        }else{
-          aic.memo <- numeric(sum(ind))
-          ord <- order(abs(b),decreasing = TRUE)
-          for (l in 1:sum(ind)){
-            ind2 <- which(abs(b)>=abs(b[ord[l]]))
-            mod <- lm(y~X[,ind2,drop=FALSE])
-            aic.memo[l] <- AIC(mod)
+        if (sum(is.na(ind)) == 0){
+          if (sum(ind)==0){
+            b.ols[,1] <- b
+          }else{
+            aic.memo <- numeric(sum(ind))
+            ord <- order(abs(b),decreasing = TRUE)
+            for (l in 1:sum(ind)){
+              ind2 <- which(abs(b)>=abs(b[ord[l]]))
+              mod <- lm(y~X[,ind2,drop=FALSE])
+              aic.memo[l] <- AIC(mod)
+            }
+            l <- which.min(aic.memo)
+            ind <- which(abs(b)>=abs(b[ord[l]]))
+            mod <- lm(y.train~X.train[,ind,drop=FALSE])
+            b.ols[ind,1] <- as.numeric(mod$coefficients)[-1]
           }
-          l <- which.min(aic.memo)
-          ind <- which(abs(b)>=abs(b[ord[l]]))
-          mod <- lm(y.train~X.train[,ind,drop=FALSE])
-          b.ols[ind,1] <- as.numeric(mod$coefficients)[-1]
+          cvm.sub[k] <- mean((y.test-X.test%*%b.ols)^2)
+        }else{
+          cvm.sub[k] <-NA
         }
-        cvm.sub[k] <- mean((y.test-X.test%*%b.ols)^2)
       }
       cvm[i,j] <- mean(cvm.sub)
     }
