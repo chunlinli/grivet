@@ -94,6 +94,15 @@ Rscript summary_infer_setting1_random.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part3/setting1/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting1/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting1/figures/`.
 
+### Figure 2
+
+To reproduce Figure 2, run the following bash script(Approximately 17.5 hours).
+```bash
+Rscript infer_part5.R
+Rscript summary_part5.R
+```
+The simulation results will be stored in `./simulations/primary_results/part5/` and the boxplots will be stored in  `./simulations/summary_results/part5/`.
+
 ### Figure 1(Supplementary Materials)
 
 To reproduce Figure 1(Supplementary Materials), run the following bash script(Approximately 20 hours).
@@ -104,14 +113,6 @@ Rscript summary_part4.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part4/discovery/` and `./simulations/primary_results/part4/estimation/` and the summary of performance of structure learning will be printed and the figures will be stored in `./simulations/summary_results/part4/`.
 
-### Figure 2
-
-To reproduce Figure 2, run the following bash script(Approximately 17.5 hours).
-```bash
-Rscript infer_part5.R
-Rscript summary_part5.R
-```
-The simulation results will be stored in `./simulations/primary_results/part5/` and the boxplots will be stored in  `./simulations/summary_results/part5/`.
 
 ### Table 1(Supplementary Materials)
 To reproduce Table 1(Supplementary Materials), run the following bash script(Approximately 12.5 hours).
