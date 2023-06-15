@@ -1,3 +1,4 @@
+## This file reads the preliminary simulation results and summarize the results of random graph part in table 3 of the main text.
 path_used <- "./primary_results/part3/setting1/"
 
 stats.list <- vector("list",6)

@@ -1,3 +1,4 @@
+## This file reads the preliminary simulation results and summarize the results of hub graph part in table 4 of the supplementary materials.
 path_used <- "./primary_results/part3/setting2/"
 
 stats.list <- vector("list",6)
