@@ -1,3 +1,4 @@
+## This file plots Figure 1 in the supplementary materials using the stored simulation results.
 viv <- rep(c(1:6),3)
 group <- rep(1:3,each=6)
 library(ggplot2)

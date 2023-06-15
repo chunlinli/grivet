@@ -1,3 +1,4 @@
+## This file conduct simulations for the figure 2 of the main text.
 library(doParallel)
 n_cores <- detectCores() - 1
 registerDoParallel(cores=n_cores)  
@@ -9,6 +10,14 @@ clusterEvalQ(cl,{library(grivet)
   library(clusterGeneration)
   library(mnormt)})
 
+## This functions samples test edges in the upper triangle part of adjacency matrix.
+
+## Arguments:
+## p: the number of primary variables.
+## len: the number of test edges.
+
+## Returns:
+## U.test.list: a list of matrices encoding edges to be tested.
 test.generation <- function(p,len){
   idx <- sample(1:(0.5*p*(p-1)),len)
   iter <- 0; k <- 1; U.test.list <- vector("list",len)
@@ -26,6 +35,21 @@ test.generation <- function(p,len){
   return(U.test.list)
 }
 
+## This function computes the test statistic proposed in the GrIVET paper.
+
+## Arguments:
+## X: n*q data matrix for intervention variables.
+## Y: n*p data matrix for primary variables.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+## Sigma_true: the true covariance matrix in DAG.
+## max.it & tol: the number of iterations and tolerance in precision matrix refiting.
+
+## Returns:
+## statistic: the proposed statistic
 simu.single.2lr <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list,max.it=100000,tol=1e-7){
   
   n <- nrow(X)
@@ -75,6 +99,13 @@ simu.single.2lr <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.
   return(statistic)
 }
 
+## This function judeges if the given `U` encodes a directed acyclic graph.
+
+## Arguments:
+## U: the causal effect matrix.
+
+## Returns:
+## flag: the encoded graph has a cycle if flag = 0, acyclic if flag = 1.
 is.acyclic <- function(U){
   flag <- 1
   while (sum(U)>0){
@@ -88,6 +119,20 @@ is.acyclic <- function(U){
   return(flag)
 }
 
+## This function generate a random graph with continuous intervention variables.
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the causal effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 random.generation <- function(p,n,U){
   if (p%%10!=0)
     stop("wrong p is given")
@@ -117,6 +162,20 @@ random.generation <- function(p,n,U){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a random graph with discrete intervention variables.
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the causal effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 random.generation2 <- function(p,n,U){
   if (p%%10!=0)
     stop("wrong p is given")
@@ -146,6 +205,19 @@ random.generation2 <- function(p,n,U){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generates random graphs with continuous interventions and compute statistics with respect to the tested edges.
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+
+## Returns:
+## stats: the computed test statistics.
 simu.random <- function(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list){
   idx <- sample(1:length(U.test.list),0.4*length(U.test.list))
   stats <- matrix(0,1,length(U.test.list)*2)
@@ -161,6 +233,19 @@ simu.random <- function(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list
   return(stats)
 }
 
+## This function generates random graphs with discrete interventions and compute statistics with respect to the tested edges.
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+
+## Returns:
+## stats: the computed test statistics.
 simu.random2 <- function(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list){
   idx <- sample(1:length(U.test.list),0.4*length(U.test.list))
   stats <- matrix(0,1,length(U.test.list)*2)
@@ -178,8 +263,9 @@ simu.random2 <- function(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.lis
 
 clusterExport(cl,c("simu.single.2lr","is.acyclic","random.generation","random.generation2","simu.random","simu.random2"))
 
-## random graph 1
+## random graph, n = 500, continuous intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 500;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -188,11 +274,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(1); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))
@@ -200,8 +289,9 @@ stats.random <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i,U.t
 stats_random <- matrix(unlist(stats.random),byrow = TRUE,ncol=100)
 write.csv(stats_random,file.path("./primary_results/part5/","stats_random1.csv"),row.names = FALSE)
 
-## random graph 2
+## random graph, n = 400, continuous intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 400;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -210,11 +300,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(2); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))
@@ -222,8 +315,9 @@ stats.random <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i,U.t
 stats_random <- matrix(unlist(stats.random),byrow = TRUE,ncol=100)
 write.csv(stats_random,file.path("./primary_results/part5/","stats_random2.csv"),row.names = FALSE)
 
-## random graph 3
+## random graph, n = 300, continuous intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 300;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -232,11 +326,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(3); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))
@@ -244,8 +341,9 @@ stats.random <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i,U.t
 stats_random <- matrix(unlist(stats.random),byrow = TRUE,ncol=100)
 write.csv(stats_random,file.path("./primary_results/part5/","stats_random3.csv"),row.names = FALSE)
 
-## random graph 4
+## random graph, n = 500, discrete intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 500;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -254,11 +352,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random2(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(4); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))
@@ -266,8 +367,9 @@ stats.random <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i,U.t
 stats_random <- matrix(unlist(stats.random),byrow = TRUE,ncol=100)
 write.csv(stats_random,file.path("./primary_results/part5/","stats_random4.csv"),row.names = FALSE)
 
-## random graph 5
+## random graph, n = 400, discrete intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 400;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -276,11 +378,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random2(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(5); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))
@@ -288,8 +393,9 @@ stats.random <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i,U.t
 stats_random <- matrix(unlist(stats.random),byrow = TRUE,ncol=100)
 write.csv(stats_random,file.path("./primary_results/part5/","stats_random5.csv"),row.names = FALSE)
 
-## random graph 6
+## random graph, n = 300, discrete intervention variables
 simu <- function(i,U.test.list){
+  ## set the parameters, see arguments in function "simu.random" for details.
   p <- 100;n <- 300;
   tau.list1 <- seq(0.1,0.2,0.01)
   gamma.list1 <- seq(0.05,0.5,0.05)
@@ -298,11 +404,14 @@ simu <- function(i,U.test.list){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## compute the test statistics
   stats.random <- numeric(100)
   stats.random <- simu.random2(p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.random)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 set.seed(6); U.test.list <- test.generation(100,50)
 len.test <- 100
 clusterExport(cl,c("simu","len.test","U.test.list"))

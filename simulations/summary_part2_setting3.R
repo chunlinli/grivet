@@ -1,3 +1,4 @@
+## This file reads the preliminary simulation results and summarize the evaluations of parameter estimation in table 3 of the supplementary materials.
 path_used <- "./primary_results/part2/setting3/"
 
 stats_hub1 <- read.csv(file = paste(path_used,"stats_hub1.csv",sep=""),header=TRUE)

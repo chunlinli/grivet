@@ -1,3 +1,4 @@
+## This file reads the preliminary simulation results and summarize the evaluations of performance in table 1 of the main text.
 path_used <- "./primary_results/part1/setting1/"
 
 stats_hub1 <- read.csv(file = paste(path_used,"stats_hub1.csv",sep=""),header=TRUE)

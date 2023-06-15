@@ -4,6 +4,7 @@ for (k in 1:6){
   stats_random.list[[k]] <- read.csv(file = paste(path_used,"stats_random",k,".csv",sep=""),header=TRUE)
 }
 
+## This file plots Figure 2 in the main text using the stored simulation results.
 library(ggplot2)
 
 ## Process empirical rejection probabilities under H0

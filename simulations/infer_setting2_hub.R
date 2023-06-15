@@ -1,3 +1,4 @@
+## This file conduct simulations for the hub graph part in table 3 of the supplementary materials.
 library(doParallel)
 n_cores <- detectCores() - 1
 registerDoParallel(cores=n_cores)  
@@ -8,6 +9,22 @@ clusterEvalQ(cl,{library(grivet)
   library(MASS)
   library(clusterGeneration)
   library(mnormt)})
+
+## This function computes the test statistic proposed in the GrIVET paper.
+
+## Arguments:
+## X: n*q data matrix for intervention variables.
+## Y: n*p data matrix for primary variables.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+## Sigma_true: the true covariance matrix in DAG.
+## max.it & tol: the number of iterations and tolerance in precision matrix refiting.
+
+## Returns:
+## statistic: the proposed statistic
 
 simu.single.2lr <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list,Sigma_true,max.it=100000,tol=1e-7){
   ## Split sample
@@ -29,13 +46,8 @@ simu.single.2lr <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.
   result.stage2 <- cv.intdag.coe(X,Y,Pi_es,Phi_es,Piv_es,tau.list2,gamma.list2,n.fold2)
   Z <- Y - Y%*%result.stage2$U - X%*%result.stage2$W
   MB.support <- cv.MB_Union(Z,tau.list3,gamma.list3,n.fold3)$S
-  #MB.support <- diag(11)
-  #MB.support[4,5] <-  MB.support[6,7] <-  MB.support[8,9] <-  MB.support[10,11] <- 1
-  #MB.support[1,2] <- MB.support[1,3] <-  MB.support[2,3] <- 1   
-  #MB.support <- 1*((MB.support +t(MB.support))>0)
   Sigma_es <- result.stage2$Sigma
   S_es <- precision_refit(Sigma_es,MB.support,max.it,tol)
-  #S_es <- pd.solve(Sigma_true)
   
   
   ## Compute 2lr using the whole graph
@@ -57,7 +69,13 @@ simu.single.2lr <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.
   return(statistic)
 }
 
+## This function judeges if the given `U` encodes a directed acyclic graph.
 
+## Arguments:
+## U: the causal effect matrix.
+
+## Returns:
+## flag: the encoded graph has a cycle if flag = 0, acyclic if flag = 1.
 is.acyclic <- function(U){
   flag <- 1
   while (sum(U)>0){
@@ -71,6 +89,20 @@ is.acyclic <- function(U){
   return(flag)
 }
 
+## This function generate a hub graph with continuous intervention variables.
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the causal effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 hub.generation <- function(p,n){
   if (p%%2==0)
     stop("wrong p is given")
@@ -101,7 +133,20 @@ hub.generation <- function(p,n){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a hub graph with discrete intervention variables.
 
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the causal effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 hub.generation2 <- function(p,n){
   if (p%%2==0)
     stop("wrong p is given")
@@ -132,7 +177,21 @@ hub.generation2 <- function(p,n){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generates hub graphs with continuous interventions and compute statistics with respect to the tested edges.
 
+## Arguments: 
+## times: the repeated times.
+## p: the number of primary variables.
+## n: the number of observations.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## stats: the computed test statistics.
 
 simu.hub <- function(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list){
   stats <- matrix(0,times,length(U.test.list))
@@ -146,6 +205,21 @@ simu.hub <- function(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.l
   return(stats)
 }
 
+## This function generates hub graphs with discrete interventions and compute statistics with respect to the tested edges.
+
+## Arguments: 
+## times: the repeated times.
+## p: the number of primary variables.
+## n: the number of observations.
+## tau.list1 & gamma.list1: lists of tuning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tuning parameters for TLP regression in parameter estimation.
+## tau.list3 & gamma.list3; lists of tuning parameters for TLP regression in support recovery of precision matrix.
+## n.fold1 & n.fold2 & n.fold3: number of folds for cross-validation in tunning parameters selection, respectively for V estimation, parameter estimation, precision matrix support recovery.
+## U.test.list: a list of matrices representing edges to be tested.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## stats: the computed test statistics.
 simu.hub2 <- function(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list){
   stats <- matrix(0,times,length(U.test.list))
   for (i in 1:times){
@@ -160,9 +234,9 @@ simu.hub2 <- function(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.
 
 clusterExport(cl,c("simu.single.2lr","is.acyclic","hub.generation","hub.generation2","simu.hub","simu.hub2"))
 
-## hub graph 1
-
+## hub graph, n = 1000, m = 200, continuous intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub" for details.
   times <- 1;p <- 11;n <- 1200;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -171,6 +245,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -186,19 +262,22 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=6)
 write.csv(stats_hub,file.path("./primary_results/part3/setting2/","stats_hub1.csv"),row.names = FALSE)
 
-## hub graph 2
-
+## hub graph, n = 500, m = 200, continuous intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub" for details.
   times <- 1;p <- 11;n <- 700;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -207,6 +286,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -222,10 +303,13 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})
@@ -233,9 +317,9 @@ stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=6)
 write.csv(stats_hub,file.path("./primary_results/part3/setting2/","stats_hub2.csv"),row.names = FALSE)
 
 
-## hub graph 3
-
+## hub graph, n = 200, m = 200, continuous intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub" for details.
   times <- 1;p <- 11;n <- 400;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -244,6 +328,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -259,19 +345,22 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=6)
 write.csv(stats_hub,file.path("./primary_results/part3/setting2/","stats_hub3.csv"),row.names = FALSE)
 
-## hub graph 4
-
+## hub graph, n = 1000, m = 200, discrete intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub2" for details.
   times <- 1;p <- 11;n <- 1200;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -280,6 +369,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -295,19 +386,22 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub2(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})
 stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=6)
 write.csv(stats_hub,file.path("./primary_results/part3/setting2/","stats_hub4.csv"),row.names = FALSE)
 
-## hub graph 5
-
+## hub graph, n = 500, m = 200, discrete intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub2" for details.
   times <- 1;p <- 11;n <- 700;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -316,6 +410,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -331,10 +427,13 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub2(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})
@@ -342,9 +441,9 @@ stats_hub <- matrix(unlist(stats.hub),byrow = TRUE,ncol=6)
 write.csv(stats_hub,file.path("./primary_results/part3/setting2/","stats_hub5.csv"),row.names = FALSE)
 
 
-## hub graph 6
-
+## hub graph, n = 200, m = 200, discrete intervention variables
 simu <- function(i){
+  ## set the parameters, see arguments in function "simu.hub2" for details.
   times <- 1;p <- 11;n <- 400;
   tau.list1 <- seq(0.2,0.3,0.01)
   gamma.list1 <- seq(0.1,1,0.1)
@@ -353,6 +452,8 @@ simu <- function(i){
   tau.list3 <- seq(0.05,0.1,0.01)
   gamma.list3 <- seq(0.005,0.1,0.005)
   n.fold1 <- n.fold2 <- n.fold3 <- 5
+  
+  ## create two lists of matrices representing the edges to be tested for different testing types.
   U.test.list <- vector("list",6)
   U.test1 <- matrix(0,p,p)
   U.test1[2,3] <- 1;
@@ -368,10 +469,13 @@ simu <- function(i){
   U.test6[1,2] <- 1; U.test6[1,3] <- 1; U.test6[1,4] <- 1; U.test6[1,5] <- 1; U.test6[1,6] <- 1;
   U.test.list[[1]] <- U.test1; U.test.list[[2]] <- U.test2; U.test.list[[3]] <- U.test3;
   U.test.list[[4]] <- U.test4; U.test.list[[5]] <- U.test5; U.test.list[[6]] <- U.test6;
+  
+  ## compute the test statistics with respect to different numbers of edges to be tested and different testing type.
   stats.hub <- simu.hub2(times,p,n,tau.list1,gamma.list1,tau.list2,gamma.list2,tau.list3,gamma.list3,n.fold1,n.fold2,n.fold3,U.test.list)
   return(stats.hub)
 }
 
+## repeat the simulations for 1000 times and store the results of test statistics.
 len.test <- 6
 clusterExport(cl,c("simu","len.test"))
 stats.hub <- parLapply(cl,1:1000,function(i){set.seed(i);try(stat<-simu(i),stat<-rep(-1,len.test));return(stat)})

@@ -1,5 +1,17 @@
 library(grivet)
 
+## This function estimates the coefficient without taking considerations of confounders.
+
+## Arguments:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## Pi: the matrix representing the support of ancestral relationships, 1 for existing ancestral relation, 0 otherwise.
+## Phi: the matrix representing the support of interventional relationships, 1 for existing interventional relation, 0 otherwise.
+## tau.list & gamma.list: a list of tuning parameters to be selected for TLP regression.
+## n.fold: the number of folds in selecting tuning parameters for TLP regression.
+
+## Returns:
+## U: the estimated causal effect matrix.
 coef.direct <- function(X,Y,Pi,Phi,tau.list,gamma.list,n.fold){
   q <- ncol(X)
   p <- ncol(Y)
@@ -43,12 +55,36 @@ coef.direct <- function(X,Y,Pi,Phi,tau.list,gamma.list,n.fold){
   return(U)
 }
 
+## This function apply our GrIVET to estimate the coefficients.
+
+## Arguments:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## Pi: the matrix representing the support of ancestral relationships, 1 for existing ancestral relation, 0 otherwise.
+## Phi: the matrix representing the support of interventional relationships, 1 for existing interventional relation, 0 otherwise.
+## Piv: the matrix representing the candidate IV set, 1 for existing candidate IV relationship and 0 otherwise.
+## tau.list & gamma.list: a list of tuning parameters to be selected for TLP regression.
+## n.fold: the number of folds in selecting tuning parameters for TLP regression.
+
+## Returns:
+## U: the estimated causal effect matrix.
 coef.proposed <- function(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold){
   out <- cv.intdag.coe(X,Y,Pi,Phi,Piv,tau.list,gamma.list,n.fold)
   U <- out$U
   return(U)
 }
 
+## This function evaluate the performance of coefficient estimation.
+
+## Arguments:
+## U: the true causal effect matrix.
+## U_es: the estimated causal effect matrix.
+## Pi: the matrix representing true support of ancestral relationships, 1 for existing ancestral relation, 0 otherwise.
+
+## Returns:
+## max_abs_diff: maximum absolute difference between U and U_es.
+## mean_abs_diff: mean absolute difference between U and U_es.
+## mean_sq_diff: mean square difference between U and U_es.
 metrics <- function(U,U_es,Pi){
   max_abs_diff <- max(abs(U-U_es))
   mean_abs_diff <- sum(abs(U-U_es))/max(1,sum(Pi!=0))
@@ -56,6 +92,20 @@ metrics <- function(U,U_es,Pi){
   return(c(max_abs_diff, mean_abs_diff,mean_sq_diff))
 }
 
+## This function generate a random graph with continuous intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 random.generation <- function(p,n,U.test,type){
   if (p%%2!=0)
     stop("wrong p is given")
@@ -92,6 +142,20 @@ random.generation <- function(p,n,U.test,type){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a random graph with discrete intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 random.generation2 <- function(p,n,U.test,type){
   if (p%%2!=0)
     stop("wrong p is given")
@@ -128,6 +192,18 @@ random.generation2 <- function(p,n,U.test,type){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a hub graph with continuous intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 
 hub.generation <- function(p,n){
   if (p%%2==0)
@@ -155,7 +231,18 @@ hub.generation <- function(p,n){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a hub graph with discrete intervention variables..
 
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 hub.generation2 <- function(p,n){
   if (p%%2==0)
     stop("wrong p is given")

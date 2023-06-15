@@ -48,6 +48,17 @@ causal_discovery_RFCI <- function(y) {
   list(out = out, u = out@amat)
 }
 
+## This function estimates the structure of DAG using our prposed GrIVET method.
+
+## Arguments:
+## X: n*q data matrix for intervention variables.
+## Y: n*p data matrix for primary variables.
+## tau.list1 & gamma.list1: lists of tunning parameters for TLP regression in matrix V estimation.
+## tau.list2 & gamma.list2; lists of tunning parameters for TLP regression in structure learning(penalized coefficient estimation).
+## n.fold1 & n.fold2: number of folds for cross-validationg in tunning parameters selection, respectively for V estimation and structure learning.
+
+## Returns:
+## out: a p*p matrix representing the structure learning results, 1 for existing edge and 0 if non-existing.
 causal_discovery_proposed <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.list2,n.fold1,n.fold2){
   result.stage1_1 <- cv.intdag.pmle.diff.aic(X,Y,tau.list1,gamma.list1,n.fold1)
   V.es <- result.stage1_1$V
@@ -67,7 +78,17 @@ PAG2best <- function(true_graph,estimate_graph){
   return(u2)
 }
 
+## This function evaluates the performance of structure learning.
 
+## Arguments:
+## true_graph: a p*p matrix representing the underlying structure of DAG, 1 if edges exist and 0 otherwise.
+## estimate_graph: a p*p matrix representing the estimated structure of DAG, 1 if edges estimated to be existent and 0 otherwise.
+
+## Returns:
+## FDR: false discovery rate.
+## SHD: structural hamming distance.
+## JCI: jaccard index.
+## TPR: true positive rate.
 metrics <- function(true_graph, estimate_graph) {
   
   true_edges <- (true_graph != 0) * 1
@@ -173,6 +194,18 @@ run.GES.and.select.with.BIC <- function(obs.data, nv, sim.data) {
   list(path=path, best.essgraph=u.amat, best.fit=ges.fit)
 }
 
+## This function generate a hub graph with continuous intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 hub.generation <- function(p,n){
   if (p%%2==0)
     stop("wrong p is given")
@@ -203,7 +236,18 @@ hub.generation <- function(p,n){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a hub graph with discrete intervention variables..
 
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 hub.generation2 <- function(p,n){
   if (p%%2==0)
     stop("wrong p is given")
@@ -234,6 +278,20 @@ hub.generation2 <- function(p,n){
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
 
+## This function generate a random graph with continuous intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 random.generation <- function(p,n,U.test,type){
   if (p%%2!=0)
     stop("wrong p is given")
@@ -272,6 +330,21 @@ random.generation <- function(p,n,U.test,type){
   Sigma <- sigma+t(V)%*%V
   return(list(X=X,Y=Y,U=U,W=W,Sigma=Sigma))
 }
+
+## This function generate a random graph with discrete intervention variables..
+
+## Arguments: 
+## p: the number of primary variables.
+## n: the number of observations.
+## U.test: a p*p matrix, 1 representing tested edges, 0 otherwise.
+## type: type = 0 controls the simulated graph so that H_0 holds, otherwise H_1 holds.
+
+## Returns:
+## X: a n*q matrix for intervention variables.
+## Y: a n*p matrix for primary variables.
+## U: a p*P matrix representing the caual effect matrix.
+## W: a q*p matrix representing the interventional effect matrix.
+## Sigma: a p*p matrix representing the covariance matrix of residuals.
 
 random.generation2 <- function(p,n,U.test,type){
   if (p%%2!=0)
