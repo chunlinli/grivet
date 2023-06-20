@@ -13,12 +13,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-load("gene_expr_data.RData")
+## load the pseudo-data and the 'grivet' package
+load("pseudo_gene_expr_data.RData")
 library(grivet)
 ```
 
 
 ```{r}
+## This function judeges if the given `U` encodes a directed acyclic graph.
+## Arguments:
+## U: the causal effect matrix.
+## Returns:
+## flag: the encoded graph has a cycle if flag = 0, acyclic if flag = 1.
 is.acyclic <- function(U){
   flag <- 1
   while (sum(U)>0){
@@ -34,55 +40,12 @@ is.acyclic <- function(U){
 ```
 
 
-## Preprocessing
-```{r}
-p <- 146
-q <- 2*p
-a <- rep(NA,p)
-
-snp.AD <- rep(NA,p)
-snp.CN <- rep(NA,p)
-for(j in 1:p) {
-  m1 <- lm(Y.CN[,j] ~ X.CN[,2*j-1])
-  m2 <- lm(Y.CN[,j] ~ X.CN[,2*j])
-  str1.CN <- summary(m1)$coefficients[,4]
-  str2.CN <- summary(m2)$coefficients[,4]
-  str.CN <- min(str1.CN[-1],str2.CN[-1])
-  snp.CN[j] <- str.CN
-  
-  m1 <- lm(Y.AD[,j] ~ X.AD[,2*j-1])
-  m2 <- lm(Y.AD[,j] ~ X.AD[,2*j])
-  str1.AD <- summary(m1)$coefficients[,4]
-  str2.AD <- summary(m2)$coefficients[,4]
-  str.AD <- min(str1.AD[-1],str2.AD[-1])
-  snp.AD[j] <- str.AD
-  
-  a[j] <- min(str.AD, str.CN)
-}
-
-
-gene <- which(a < 1e-14) # change the threshold for significant SNPs
-
-snp <- rep(0, length(gene))
-for (k in 1:length(gene)) {
-  snp[2*k-1] <- 2*gene[k]-1
-  snp[2*k] <- 2*gene[k]
-}
-
-gene_name <- names(Y.AD)[gene]
-gene_name 
-snp_name <- colnames(X.AD)[snp]
-snp_name
-```
-
 ## AD part
 
 ```{r}
-Y1 <- Y.AD[,gene]
-X1 <- X.AD[,snp]
-```
-
-```{r}
+## centralize the data for AD
+Y1 <- Y.AD
+X1 <- X.AD
 Y1 <- t(t(Y1)-colMeans(Y1))
 X1 <- t(t(X1)-colMeans(X1))
 ```
@@ -91,93 +54,104 @@ X1 <- t(t(X1)-colMeans(X1))
 ### Estimation of V matrix
 ```{r}
 set.seed(0)
+## tuning parameters for V matrix estimation
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0.00001,0.001,0.00001)
 n.fold <- 5
-result1.1 <- cv.intdag.pmle.diff.aic(X1,Y1,tau.list,gamma.list,n.fold)
+result1.1 <- cv.intdag.pmle.diff.aic(X1,Y1,tau.list,gamma.list,n.fold) ## estimate V
 ```
 
 ### Structure Recovery
 ```{r}
-V <- result1.1$V
-result1.2 <- topological_order(V)
+V <- result1.1$V ## the estimated V
+result1.2 <- topological_order(V) ## recover the DAG structure
 ```
 
 
 ### Coefficient estimation
 ```{r}
-Pi1 <- result1.2$an_mat
-Phi1 <- result1.2$in_mat
-Piv1 <- result1.2$iv_mat
+Pi1 <- result1.2$an_mat ## The matrix representing ancestral relationship, 1 if existing, 0 otherwise.
+Phi1 <- result1.2$in_mat ## The matrix representing invertion relationship, 1 if existing, 0 otherwise.
+Piv1 <- result1.2$iv_mat ## The matrix representing candidate IV set, 1 if existing, 0 otherwise.
 ```
 
 ```{r}
 set.seed(0)
+## tuning parameters for parameter estimation
 n.fold <- 5
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0.1,3.5,0.1)
-result1.3 <- cv.intdag.coe(X1,Y1,Pi1,Phi1,Piv1,tau.list,gamma.list,n.fold)
+result1.3 <- cv.intdag.coe(X1,Y1,Pi1,Phi1,Piv1,tau.list,gamma.list,n.fold) ## estimate the parameters
 ```
 
 
 ### mbtlp for precision matrix estimation
 ```{r}
 set.seed(0)
-Z1 <- Y1 - Y1%*%result1.3$U - X1%*%result1.3$W
+Z1 <- Y1 - Y1%*%result1.3$U - X1%*%result1.3$W ## compute the residuals
+## tuning parameters for estimating the support of precision matrix
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0,0.0001,0.000001)
 n.fold <- 5
-result1.5 <- cv.MB_Union(Z1,tau.list,gamma.list,n.fold)
+result1.5 <- cv.MB_Union(Z1,tau.list,gamma.list,n.fold) ## estimate the support of precision matrix
 ```
 
 ```{r}
-S <- result1.5$S
-Sigma <- result1.3$Sigma
-max.it <- 10000
-tol <- 1e-7
-wi1 <- precision_refit(Sigma,S,max.it,tol)
+S <- result1.5$S ## support of the precision matrix
+Sigma <- result1.3$Sigma ## covariance matrix of the residuals
+max.it <- 10000 ## the number of maximum iterations for BCD algorithm
+tol <- 1e-7 ## the stopping criterion for BCD algorithm
+wi1 <- precision_refit(Sigma,S,max.it,tol) ## the estimated precision matrix
 ```
 
 ### APP -> APOE
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'APP')
 idx2 <- which(colnames(Y1) == 'APOE')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
-```{r}
+```{r,warning=FALSE}
+## compute the test statistic for the hypothesis
 stat1.1 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.1
 ```
 
 ### LRP1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'LRP1')
 idx2 <- which(colnames(Y1) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.2 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.2
 ```
@@ -185,88 +159,104 @@ stat1.2
 
 ### APP -> APBB1
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'APP')
 idx2 <- which(colnames(Y1) == 'APBB1')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.3 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.3
 ```
 
 ### CAPN1 -> CDK5R1
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'CAPN1')
 idx2 <- which(colnames(Y1) == 'CDK5R1')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.4 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.4
 ```
 
 ### LRP1 -> GSK3B
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'LRP1')
 idx2 <- which(colnames(Y1) == 'GSK3B')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.5 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.5
 ```
 
 ### CAPN1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'CAPN1')
 idx2 <- which(colnames(Y1) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.6 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.6
 ```
@@ -274,22 +264,26 @@ stat1.6
 
 ### ATP5F1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y1) == 'ATP5F1')
 idx2 <- which(colnames(Y1) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi1),ncol(Pi1))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi1+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat1.7 <- intdag.2lr(X1,Y1,U0,Phi1,U1,Phi1,wi1)$statistic
 stat1.7
 ```
@@ -297,11 +291,9 @@ stat1.7
 ## CN Part
 
 ```{r}
-Y2 <- Y.CN[,gene]
-X2 <- X.CN[,snp]
-```
-
-```{r}
+## centralize the data for CN
+Y2 <- Y.CN
+X2 <- X.CN
 Y2 <- t(t(Y2)-colMeans(Y2))
 X2 <- t(t(X2)-colMeans(X2))
 ```
@@ -310,31 +302,33 @@ X2 <- t(t(X2)-colMeans(X2))
 ### Estimation of V matrix
 ```{r}
 set.seed(0)
+## tuning parameters for V matrix estimation
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0.00001,0.001,0.00001)
 n.fold <- 5
-result2.1 <- cv.intdag.pmle.diff.aic(X2,Y2,tau.list,gamma.list,n.fold)
+result2.1 <- cv.intdag.pmle.diff.aic(X2,Y2,tau.list,gamma.list,n.fold) ## estimate V
 ```
 
 ### Structure Recovery
 ```{r}
-V <- result2.1$V
-result2.2 <- topological_order(V)
+V <- result2.1$V ## the estimated V
+result2.2 <- topological_order(V) ## recover the DAG structure
 ```
 
 ### Coefficient estimation
 ```{r}
-Pi2 <- result2.2$an_mat
-Phi2 <- result2.2$in_mat
-Piv2 <- result2.2$iv_mat
+Pi2 <- result2.2$an_mat ## The matrix representing ancestral relationship, 1 if existing, 0 otherwise.
+Phi2 <- result2.2$in_mat ## The matrix representing invertion relationship, 1 if existing, 0 otherwise.
+Piv2 <- result2.2$iv_mat ## The matrix representing candidate IV set, 1 if existing, 0 otherwise.
 ```
 
 ```{r}
 set.seed(0)
+## tuning parameters for parameter estimation
 n.fold <- 5
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0.1,3.5,0.1)
-result2.3 <- cv.intdag.coe(X2,Y2,Pi2,Phi2,Piv2,tau.list,gamma.list,n.fold)
+result2.3 <- cv.intdag.coe(X2,Y2,Pi2,Phi2,Piv2,tau.list,gamma.list,n.fold) ## estimate the parameters
 ```
 
 
@@ -342,61 +336,70 @@ result2.3 <- cv.intdag.coe(X2,Y2,Pi2,Phi2,Piv2,tau.list,gamma.list,n.fold)
 ### mbtlp for precision matrix estimation
 ```{r}
 set.seed(0)
-Z2 <- Y2 - Y2%*%result2.3$U - X2%*%result2.3$W
+Z2 <- Y2 - Y2%*%result2.3$U - X2%*%result2.3$W ## compute the residuals
+## tuning parameters for estimating the support of precision matrix
 tau.list <- c(0.01,0.02,0.03)
 gamma.list <- seq(0,0.0001,0.000001)
-n.fold <- 5
-result2.5 <- cv.MB_Union(Z2,tau.list,gamma.list,n.fold)
+n.fold <- 5 
+result2.5 <- cv.MB_Union(Z2,tau.list,gamma.list,n.fold) ## estimate the support of precision matrix
 ```
 
-```{r}
-S <- result2.5$S
-Sigma <- result2.3$Sigma
-max.it <- 10000
-tol <- 1e-7
-wi2 <- precision_refit(Sigma,S,max.it,tol)
+```{r} 
+S <- result2.5$S ## support of the precision matrix
+Sigma <- result2.3$Sigma ## covariance matrix of the residuals
+max.it <- 10000 ## the number of maximum iterations for BCD algorithm
+tol <- 1e-7 ## the stopping criterion for BCD algorithm
+wi2 <- precision_refit(Sigma,S,max.it,tol) ## the estimated precision matrix
 ```
 
 ### APP -> APOE
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'APP')
 idx2 <- which(colnames(Y2) == 'APOE')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.1 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.1
 ```
 
 ### LRP1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'LRP1')
 idx2 <- which(colnames(Y2) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.2 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.2
 ```
@@ -404,88 +407,104 @@ stat2.2
 
 ### APP -> APBB1
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'APP')
 idx2 <- which(colnames(Y2) == 'APBB1')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
-```{r}
+```{r,warning=FALSE}
+## compute the test statistic for the hypothesis
 stat2.3 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.3
 ```
 
 ### CAPN1 -> CDK5R1
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'CAPN1')
 idx2 <- which(colnames(Y2) == 'CDK5R1')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.4 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.4
 ```
 
 ### LRP1 -> GSK3B
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'LRP1')
 idx2 <- which(colnames(Y2) == 'GSK3B')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.5 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.5
 ```
 
 ### CAPN1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'CAPN1')
 idx2 <- which(colnames(Y2) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.6 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.6
 ```
@@ -493,28 +512,33 @@ stat2.6
 
 ### ATP5F1 -> CASP3
 ```{r}
+## indexes for test genes
 idx1 <- which(colnames(Y2) == 'ATP5F1')
 idx2 <- which(colnames(Y2) == 'CASP3')
 ```
 
 ```{r}
+## structure under the alternative hypothesis
 U.test <- matrix(0,nrow(Pi2),ncol(Pi2))
 U.test[idx1,idx2] <- 1
 U1 <- 1*((Pi2+U.test)>0)
-is.acyclic(U1)==0
+is.acyclic(U1)==0 ## judge if the acyclicity constraint is violated
 ```
 
 ```{r}
+## structure under the null hypothesis
 U0 <- U1-U.test
 ```
 
 ```{r}
+## compute the test statistic for the hypothesis
 stat2.7 <- intdag.2lr(X2,Y2,U0,Phi2,U1,Phi2,wi2)$statistic
 stat2.7
 ```
 
 ## Summary of Results
 ```{r}
+## summarize the results
 stat1 <- c(stat1.1,stat1.2,stat1.3,stat1.4,stat1.5,stat1.6,stat1.7)
 stat2 <- c(stat2.1,stat2.2,stat2.3,stat2.4,stat2.5,stat2.6,stat2.7)
 stat.mat <- cbind(stat1,stat2)
@@ -529,6 +553,7 @@ knitr::kable(stat.mat)
 ## Bonferroni-Holm Correction for linkage-test
 
 ```{r}
+## compute the p-values of tests after Bonferroni-Holm corrections
 stat.mat.correct <- stat.mat
 ps  <- as.vector(stat.mat.correct)
 ps <- unlist(lapply(ps,function(o) {return(1-pchisq(o,df=1))}))
@@ -543,6 +568,8 @@ knitr::kable(p.mat.correct)
 ```
 
 ## Normality Check
+
+Check the normality of residuals.
 
 ### AD 
 ```{r}
@@ -592,11 +619,15 @@ for (i in 19:21){
 
 
 ## Covariance Matrix Plot
+
+Compute the correlations among residuals to check the existence of confounders.
+
 ```{r}
 library(ggcorrplot)
 ```
 
 ```{r}
+## plot the correlation matrix of residuals for AD
 corrad <- cor(rmat1)
 pmatad <- cor_pmat(rmat1)
 pdf(
@@ -609,6 +640,7 @@ dev.off()
 ```
 
 ```{r}
+## plot the correlation matrix of residuals for CN
 corrcn <- cor(rmat2)
 pmatcn <- cor_pmat(rmat2)
 pdf(

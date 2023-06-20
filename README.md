@@ -10,7 +10,7 @@ The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation 
 
 ## Contents
 
--  `./grivet/`: contains an R package for algorithm implementations.
+- `./grivet/`: contains an R package for algorithm implementations.
 
 - `./real_data/`: contains analysis of ADNI data with GrIVET.
 
@@ -152,6 +152,17 @@ Rscript infer_setting2_random.R
 Rscript summary_infer_setting2_random.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part3/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part3/setting2/`. In addition, the statistics distribution figures will be stored in `./simulations/summary_results/part3/setting2/figures/`.
+
+## Real Data Reproductions
+
+**Note:** Due to license restrictions, we cannot directly share the [ADNI data](https://adni.loni.usc.edu/data-samples/access-data/). Instead, we provide a pseudo-data along with a Rmd file to process the data, so that readers can reproduce the results obtained on the pseudo-data, which is similar but not exactly the same with the real data.
+
+### Contents
+
+- `pseudo_gene_expr_data.RData`: simulated pseudo-data.
+- `real_data_analysis.Rmd`: contains code reproducing the real data analysis with pseudo-data.
+- `real_data_analysis.pdf`: results for edges testing and normality check with pseudo-data.
+- `resi_ad.pdf, resi_cn.pdf`: residual correlation matrices with pseudo-data.
 
 
 ## References
