@@ -4,11 +4,13 @@ library(bnlearn)
 library(pcalg)
 library(grivet)
 
+## This function implements LRpS+GES, for details, refer to https://github.com/benjaminfrot/lrpsadmm-examples/blob/master/LRpSGES.ipynb
 causal_discovery_LRpS_GES <- function(y) {
   y <- scale(y)
   n <- nrow(y)
   p <- ncol(y)
   gammas <- c(0.05, 0.07, 0.1, 0.12, 0.15, 0.17, 0.2)
+  ## Compute LRpS and select a graphical model using cross-validation
   xval_path <- lrpsadmm.cv(
     X = y,
     gammas = gammas,
@@ -19,12 +21,16 @@ causal_discovery_LRpS_GES <- function(y) {
     lambda.ratio = 1e-04,
     backend = "RcppEigen"
   )
+  # Because the GES function of pcalg can only take a data matrix as input and not a covariance matrix, 
+  # we simulate data with the exact same sample covariance matrix as the estimated one. 
+  # This is a trick that lets use the GES function of pcalg.
   selected_s <- xval_path$best.fit$fit$S
   fake_data <- generate.data.for.GES(
     Sest = selected_s,
     n = n,
     p = p
   )
+  # We now compute the GES path on the resulting data and compute the BIC at each step. 
   lrps_ges_output <- run.GES.and.select.with.BIC(
     obs.data = fake_data,
     nv = p,
@@ -34,6 +40,7 @@ causal_discovery_LRpS_GES <- function(y) {
   list(out = lrps_ges_output, u = lrps_ges_output$best.essgraph)
 }
 
+## This function implements RFCI algorithm
 causal_discovery_RFCI <- function(y) {
   suffStat <- list(C = cor(y), n = nrow(y))
   out <- rfci(
@@ -71,6 +78,7 @@ causal_discovery_proposed <- function(X,Y,tau.list1,gamma.list1,tau.list2,gamma.
   return(out)
 }
 
+## This function transmit a CPDAG into a DAG with a favorable fashion
 PAG2best <- function(true_graph,estimate_graph){
   true_graph <- (true_graph != 0) * 1
   u1 <- pag2edge(estimate_graph)+1
@@ -118,6 +126,8 @@ metrics <- function(true_graph, estimate_graph) {
   return(c(FDR,JCI,TPR,SHD))
 }
 
+## The function `generate.data.for.GES` is from https://github.com/benjaminfrot/lrpsadmm-examples/blob/master/utils/generate_data_for_GES.R
+
 generate.data.for.GES <- function(Sest, n, p) {
   S.est.lrps <- Sest
   Sig.est.lrps <- solve(S.est.lrps)
@@ -131,6 +141,9 @@ generate.data.for.GES <- function(Sest, n, p) {
   fake.data <- as.data.frame(fake.data)
   obs.data <- fake.data
 }
+
+
+## The function `run.GES.and.select.with.BIC` is from: https://github.com/benjaminfrot/lrpsadmm-examples/blob/master/utils/run_GES.R
 
 run.GES.and.select.with.BIC <- function(obs.data, nv, sim.data) {
   
