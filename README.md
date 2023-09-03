@@ -122,7 +122,7 @@ Rscript summary_part1_setting2.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part1/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part1/setting2/`.
 
-### Table 2(Supplementary Materials)
+### Table 2 (Supplementary Materials)
 To reproduce Table 2(Supplementary Materials), run the following bash script(Approximately 3.5 hours).
 ```bash
 Rscript comparison2_setting2_simu.R
@@ -130,7 +130,7 @@ Rscript summary_part2_setting2.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part2/setting2/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting2/`.
 
-### Table 3(Supplementary Materials)
+### Table 3 (Supplementary Materials)
 To reproduce Table 3(Supplementary Materials), run the following bash script(Approximately 3.5 hours).
 ```bash
 Rscript comparison2_setting3_simu.R
@@ -138,7 +138,7 @@ Rscript summary_part2_setting3.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part2/setting3/` and the summary will be printed and stored in `./simulations/summary_results/part2/setting3/`.
 
-### Table 4(Supplementary Materials)
+### Table 4 (Supplementary Materials)
 To reproduce Hub Graph part of Table 4(Supplementary Materials), run the following bash script(Approximately 2.5 hours).
 ```bash
 Rscript infer_setting2_hub.R
@@ -183,7 +183,7 @@ Open-sourced software: [pcalg](https://github.com/cran/pcalg).
 In addition, part of the simulation code is adapted from 
 [Frot's code](https://github.com/benjaminfrot/lrpsadmm-examples).
 
-**I would like to thank the authors of above open-sourced software.**
+**We would like to thank the authors of above open-sourced software.**
 
 
 
