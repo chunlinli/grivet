@@ -3,7 +3,7 @@ This repository contains an implementation of the following paper
 
 - [Discovery and inference of a causal network with hidden confounding](https://arxiv.org/abs/2309.09420). *Journal of the American Statistical Association*.
 
-The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation and **T**esting(GrIVET).
+The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation and **T**esting (GrIVET).
 
 <img src="GrIVET.png" alt="GrIVET" width="400"/>
 
