@@ -1,7 +1,7 @@
 # Graphical Instrumental Variables Estimation and Testing
 This repository contains an implementation of the following paper 
 
-- Discovery and inference of a causal network with hidden confounding. *Journal of the American Statistical Association*.
+- [Discovery and inference of a causal network with hidden confounding](https://arxiv.org/abs/2309.09420). *Journal of the American Statistical Association*.
 
 The method is named **Gr**aphical **I**nstrumental **V**ariables **E**stimation and **T**esting(GrIVET).
 
@@ -103,7 +103,7 @@ Rscript summary_part5.R
 ```
 The simulation results will be stored in `./simulations/primary_results/part5/` and the boxplots will be stored in  `./simulations/summary_results/part5/`.
 
-### Figure 1(Supplementary Materials)
+### Figure 1 (Supplementary Materials)
 
 To reproduce Figure 1(Supplementary Materials), run the following bash script(Approximately 20 hours).
 ```bash
@@ -114,7 +114,7 @@ Rscript summary_part4.R
 The simulation results will be stored in `./simulations/primary_results/part4/discovery/` and `./simulations/primary_results/part4/estimation/` and the summary of performance of structure learning will be printed and the figures will be stored in `./simulations/summary_results/part4/`.
 
 
-### Table 1(Supplementary Materials)
+### Table 1 (Supplementary Materials)
 To reproduce Table 1(Supplementary Materials), run the following bash script(Approximately 12.5 hours).
 ```bash
 Rscript comparison1_setting2_simu.R
